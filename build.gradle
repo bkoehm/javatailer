@@ -1,0 +1,41 @@
+// Apply the java plugin to add support for Java
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+group = 'software.javatailer'
+version = '0.1-SNAPSHOT'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    mavenLocal()
+    if (binding.hasVariable("default_proxy_url")) {
+        maven {
+            url default_proxy_url
+            credentials {
+                username default_proxy_username
+                password default_proxy_password
+            }
+        }
+    }
+    jcenter()
+    mavenCentral()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    // Slf4j and Log4j2
+    compile 'org.slf4j:slf4j-api:1.7.20'
+    def log4jVersion = '2.5'
+    testCompile "org.apache.logging.log4j:log4j-core:$log4jVersion"
+    testCompile "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+
+    testCompile 'junit:junit:4.12'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
