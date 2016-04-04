@@ -1,13 +1,27 @@
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 group = 'software.javatailer'
-version = '0.1-SNAPSHOT'
+version = '0.1'
+
+buildscript {
+   repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+    }
+}
 
 // In this section you declare where to find the dependencies of your project
 repositories {
     mavenLocal()
+    // If using a Maven proxy, put the property settings in
+    // ~/.gradle/gradle.properties for default_proxy_url,
+    // default_proxy_username and default_proxy_password.
+    // TODO: replace with property()?
     if (binding.hasVariable("default_proxy_url")) {
         maven {
             url default_proxy_url
@@ -36,6 +50,28 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+        }
+    }
+}
+
+bintray {
+    // put in ~/.gradle/gradle.properties
+    user =  property('default_bintray_user')
+    key =  property('default_bintray_api_key')
+    publications = ['mavenJava']
+
+    //dryRun = true
+
+    pkg {
+        repo = 'maven'
+        name = 'javatailer'
+        desc = 'JavaTailer - tail for Java'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/bkoehm/javatailer.git'
+        issueTrackerUrl = 'https://github.com/bkoehm/javatailer/issues'
+        version {
+            name = '0.1'
+            released = new Date()
         }
     }
 }
