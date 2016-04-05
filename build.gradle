@@ -21,13 +21,12 @@ repositories {
     // If using a Maven proxy, put the property settings in
     // ~/.gradle/gradle.properties for default_proxy_url,
     // default_proxy_username and default_proxy_password.
-    // TODO: replace with property()?
-    if (binding.hasVariable("default_proxy_url")) {
+    if (hasProperty("default_proxy_url")) {
         maven {
             url default_proxy_url
             credentials {
-                username default_proxy_username
-                password default_proxy_password
+                username property("default_proxy_username")
+                password property("default_proxy_password")
             }
         }
     }
@@ -54,24 +53,26 @@ publishing {
     }
 }
 
-bintray {
-    // put in ~/.gradle/gradle.properties
-    user =  property('default_bintray_user')
-    key =  property('default_bintray_api_key')
-    publications = ['mavenJava']
+if(hasProperty('default_bintray_user')) {
+    bintray {
+        // put in ~/.gradle/gradle.properties
+        user =  property('default_bintray_user')
+        key =  property('default_bintray_api_key')
+        publications = ['mavenJava']
 
-    //dryRun = true
+        //dryRun = true
 
-    pkg {
-        repo = 'maven'
-        name = 'javatailer'
-        desc = 'JavaTailer - tail for Java'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/bkoehm/javatailer.git'
-        issueTrackerUrl = 'https://github.com/bkoehm/javatailer/issues'
-        version {
-            name = '0.1'
-            released = new Date()
+        pkg {
+            repo = 'maven'
+            name = 'javatailer'
+            desc = 'JavaTailer - tail for Java'
+            licenses = ['Apache-2.0']
+            vcsUrl = 'https://github.com/bkoehm/javatailer.git'
+            issueTrackerUrl = 'https://github.com/bkoehm/javatailer/issues'
+            version {
+                name = '0.1'
+                released = new Date()
+            }
         }
     }
 }
