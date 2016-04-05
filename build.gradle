@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'software.javatailer'
-version = '0.1'
+version = '0.1.1'
 
 buildscript {
    repositories {
@@ -70,7 +70,7 @@ if(hasProperty('default_bintray_user')) {
             vcsUrl = 'https://github.com/bkoehm/javatailer.git'
             issueTrackerUrl = 'https://github.com/bkoehm/javatailer/issues'
             version {
-                name = '0.1'
+                name = version
                 released = new Date()
             }
         }
