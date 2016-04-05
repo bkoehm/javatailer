@@ -57,6 +57,16 @@ public class TailerThread extends Thread {
     private final TailerCallback callback;
     private final Path path;
 
+    /**
+     * If a file is detected to be truncated then if the new size is under this
+     * threshold limit, all new data from byte 0 to the current size will be
+     * sent to the callback handler. If the new size is above the threshold,
+     * then the data from the beginning of the file is not sent. This is a crude
+     * attempt at distinguishing between the use case of an emptied file vs a
+     * shortened file.
+     */
+    private int truncateThresholdLimitBytes = 4096;
+
     // internally-managed
     /**
      * Set when a fatal occurs within the TailerThread that causes it to exit.
@@ -256,8 +266,7 @@ public class TailerThread extends Thread {
                                 LOG.debug("does not equal");
                             }
                         }
-                    }
-                    finally {
+                    } finally {
                         key.reset();
                     }
                 } catch (InterruptedException e) {
@@ -372,8 +381,62 @@ public class TailerThread extends Thread {
                 } else {
                     LOG.warn("Why 0 bytes read?");
                 }
+            } else if (currentSize < lastSize) {
+                // Truncate event.
+                LOG.debug("truncate event detected");
+
+                //
+                // Our main use case with this is dealing with log rotation
+                // programs that truncate the file to zero. But we also have to
+                // consider the less-usual use case where the file has just been
+                // shortened, not emptied (perhaps by someone editing it with a
+                // text editor).
+                //
+                // There's no perfect science to detecting which it is because
+                // in the case of truncate(0), additional bytes could have
+                // already been written to the file, making it non-zero in size.
+                // So we deal with this by setting a threshold: If the
+                // truncated file is below a certain byte-limit, then assume it
+                // was emptied and that we want to send all new data to the
+                // callback handler. If the new size is above the threshold,
+                // then we assume it was shrunk and not emptied, and we do NOT
+                // want to send the entire file contents to the callback
+                // handler. Instead, we just reset lastSize to the new size so
+                // that later appended lines are detected from the
+                // new-end-of-file.
+
+                boolean underThreshold = false;
+                if (currentSize < getThresholdLimitBytes()) {
+                    LOG.debug("under threshold");
+                    underThreshold = true;
+                    this.lastSize = 0;
+
+                    try {
+                        callback.truncateEvent(path, underThreshold);
+                    } catch (RuntimeException e) {
+                        reportCallbackException("truncateEvent", e);
+                    }
+
+                    // send all the bytes in the file
+                    LOG.debug("Sending all the bytes in the file");
+                    event(kind, path);
+                    LOG.debug("Done sending all the new bytes in the file");
+                    return;
+
+                } else {
+                    LOG.debug("not under threshold");
+                    // not under threshold
+                    this.lastSize = currentSize;
+
+                    try {
+                        callback.truncateEvent(path, underThreshold);
+                    } catch (RuntimeException e) {
+                        reportCallbackException("truncateEvent", e);
+                    }
+                }
+
             } else {
-                LOG.warn("currentSize is not greater than the last read size.  currentSize=" + currentSize + ", lastSize=" + lastSize);
+                LOG.warn("currentSize is still the same size as the last read size.  currentSize=" + currentSize + ", lastSize=" + lastSize);
             }
 
             this.lastSize = currentSize;
@@ -465,5 +528,13 @@ public class TailerThread extends Thread {
         } catch (RuntimeException e2) {
             // ignore
         }
+    }
+
+    public void setTruncateThresholdLimitBytes(int thresholdLimitBytes) {
+        this.truncateThresholdLimitBytes = thresholdLimitBytes;
+    }
+
+    public int getThresholdLimitBytes() {
+        return truncateThresholdLimitBytes;
     }
 }

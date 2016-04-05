@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'software.javatailer'
-version = '0.1.1'
+version = '0.1.2'
 
 buildscript {
    repositories {

@@ -45,8 +45,10 @@ public interface TailerCallback {
      * event means that the file's size has shrunk.
      * 
      * @param file The Path object for the truncated file.
+     * @param underThreshold true if the truncated file was under the truncate
+     *            threshold size limit in the {@link TailerThread}.
      */
-    void truncateEvent(Path file);
+    void truncateEvent(Path file, boolean underThreshold);
 
     /**
      * Notification that new data has been appended to a file.
