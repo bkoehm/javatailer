@@ -241,16 +241,24 @@ public class TailerThread extends Thread {
                     LOG.debug("about to call watchService.take()");
                     WatchKey key = watchService.take();
                     LOG.debug("take() returned");
-                    for (WatchEvent<?> watchEventNoParam : key.pollEvents()) {
-                        @SuppressWarnings("unchecked")
-                        WatchEvent<Path> watchEvent = (WatchEvent<Path>)watchEventNoParam;
-                        LOG.debug("event " + watchEvent.kind() + " for " + watchEvent.context());
-                        if (Files.isSameFile(watchEvent.context(), path)) {
-                            LOG.debug("does equal");
-                            event(watchEvent.kind(), watchEvent.context());
-                        } else {
-                            LOG.debug("does not equal");
+                    try {
+                        Path watchedDirectory = (Path)key.watchable();
+                        for (WatchEvent<?> watchEventNoParam : key.pollEvents()) {
+                            @SuppressWarnings("unchecked")
+                            WatchEvent<Path> watchEvent = (WatchEvent<Path>)watchEventNoParam;
+                            LOG.debug("event " + watchEvent.kind() + " for " + watchEvent.context());
+                            Path watchedFile = watchedDirectory.resolve(watchEvent.context());
+                            LOG.debug("watchedFile = " + watchedFile);
+                            if (Files.isSameFile(watchedFile, path)) {
+                                LOG.debug("does equal");
+                                event(watchEvent.kind(), watchedFile);
+                            } else {
+                                LOG.debug("does not equal");
+                            }
                         }
+                    }
+                    finally {
+                        key.reset();
                     }
                 } catch (InterruptedException e) {
                     // ignore: caller will set doStop if they want this thread
