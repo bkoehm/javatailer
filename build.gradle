@@ -70,7 +70,8 @@ if(hasProperty('default_bintray_user')) {
             vcsUrl = 'https://github.com/bkoehm/javatailer.git'
             issueTrackerUrl = 'https://github.com/bkoehm/javatailer/issues'
             version {
-                name = version
+                name = project.version
+                desc = "JavaTailer v${project.version }- tail for Java"
                 released = new Date()
             }
         }
