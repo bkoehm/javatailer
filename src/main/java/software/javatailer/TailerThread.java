@@ -259,7 +259,7 @@ public class TailerThread extends Thread {
                             LOG.debug("event " + watchEvent.kind() + " for " + watchEvent.context());
                             Path watchedFile = watchedDirectory.resolve(watchEvent.context());
                             LOG.debug("watchedFile = " + watchedFile);
-                            if (Files.isSameFile(watchedFile, path)) {
+                            if (watchedFile.toAbsolutePath().equals(path.toAbsolutePath())) {
                                 LOG.debug("does equal");
                                 event(watchEvent.kind(), watchedFile);
                             } else {
@@ -436,7 +436,7 @@ public class TailerThread extends Thread {
                 }
 
             } else {
-                LOG.warn("currentSize is still the same size as the last read size.  currentSize=" + currentSize + ", lastSize=" + lastSize);
+                LOG.debug("currentSize is still the same size as the last read size.  currentSize=" + currentSize + ", lastSize=" + lastSize);
             }
 
             this.lastSize = currentSize;
