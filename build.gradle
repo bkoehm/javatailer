@@ -10,7 +10,7 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 buildscript {
-   repositories {
+    repositories {
         mavenLocal()
         // If using a Maven proxy, put the property settings in
         // ~/.gradle/gradle.properties for default_proxy_url,
@@ -70,11 +70,11 @@ publishing {
     }
 }
 
-if(hasProperty('default_bintray_user')) {
+if (project.hasProperty('default_bintray_user')) {
     bintray {
         // put in ~/.gradle/gradle.properties
-        user =  property('default_bintray_user')
-        key =  property('default_bintray_api_key')
+        user = project.property('default_bintray_user')
+        key = project.property('default_bintray_api_key')
         publications = ['mavenJava']
 
         //dryRun = true
@@ -88,7 +88,7 @@ if(hasProperty('default_bintray_user')) {
             issueTrackerUrl = 'https://github.com/bkoehm/javatailer/issues'
             version {
                 name = project.version
-                desc = "JavaTailer v${project.version }- tail for Java"
+                desc = "JavaTailer v${project.version}- tail for Java"
                 released = new Date()
             }
         }
