@@ -11,25 +11,39 @@ targetCompatibility = 1.7
 
 buildscript {
    repositories {
+        mavenLocal()
+        // If using a Maven proxy, put the property settings in
+        // ~/.gradle/gradle.properties for default_proxy_url,
+        // default_proxy_username and default_proxy_password.
+        if (project.hasProperty("default_proxy_url")) {
+            maven {
+                url project.property("default_proxy_url")
+                credentials {
+                    username project.property("default_proxy_username")
+                    password project.property("default_proxy_password")
+                }
+            }
+        }
         jcenter()
+        mavenCentral()
     }
+
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
     }
 }
 
-// In this section you declare where to find the dependencies of your project
 repositories {
     mavenLocal()
     // If using a Maven proxy, put the property settings in
     // ~/.gradle/gradle.properties for default_proxy_url,
     // default_proxy_username and default_proxy_password.
-    if (hasProperty("default_proxy_url")) {
+    if (project.hasProperty("default_proxy_url")) {
         maven {
-            url default_proxy_url
+            url project.property("default_proxy_url")
             credentials {
-                username property("default_proxy_username")
-                password property("default_proxy_password")
+                username project.property("default_proxy_username")
+                password project.property("default_proxy_password")
             }
         }
     }
